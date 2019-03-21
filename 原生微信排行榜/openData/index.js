@@ -90,10 +90,9 @@ class RankListRenderer {
         });
     }
 
-    //绘制不变化的内容
+    //绘制我的排名
     _myRank() {
 
-        console.log("绘制不变化内容")
         this.ctx.fillStyle = "#3470B7";
         this.ctx.textAlign = "center";
         this.ctx.baseLine = "center";
@@ -108,12 +107,10 @@ class RankListRenderer {
 
     //查找自己的排名
     _findMyrank() {
-        console.log("当前好友数据", this._mGameDatas);
         if (this._mOpenid) {
             for (let index = 0; index < this._mGameDatas.length; index++) {
                 if (this._mGameDatas[index].openid == this._mOpenid) {
                     this._mMyRank = index + 1;
-                    console.log("我的排名", this._mMyRank);
                     break;
                 }
             }
@@ -139,7 +136,8 @@ class RankListRenderer {
                 }
                 if (score > cloudScore) {
                     let kvDataList = new Array();
-                    kvDataList.push({ key: Consts.OpenDataKeys.ScoreKey, value: score.toString() });
+                    let val = { wxgame: { score: score, update_time: new Date().getTime()}};
+                    kvDataList.push({ key: Consts.OpenDataKeys.ScoreKey, value: JSON.stringify(val) });
                     wx.setUserCloudStorage({ KVDataList: kvDataList });
                 }
             }
@@ -206,7 +204,6 @@ class RankListRenderer {
 
         for (let i = 0, len = pageLen; i < pageLen; i++) {
             this._drawRankItem(this.ctx, i, pageStart + i + 1, pagedData[i], pageLen);
-            console.log("好友数据信息", pagedData[i]);
         }
     }
 
@@ -219,18 +216,17 @@ class RankListRenderer {
         const kvData = data.KVDataList.find(kvData => kvData.key === Consts.OpenDataKeys.ScoreKey);
         const score = kvData ? JSON.parse(kvData.value).wxgame.score : 0;
         const itemGapY = ITEM_HEIGHT * (index + 1);
-        console.log("itemGrap", itemGapY);
 
         //绘制单项背景
         let img = wx.createImage();
-        let promise = this._setPromise(img, "wx-sub/image/item.png");
+        let promise = this._setPromise(img, "openData/image/item.png");
         Promise.all([promise]).then(() => {
             this.ctx.drawImage(img, 0, itemGapY - 15, ITEM_WIDTH, ITEM_HEIGHT);
 
             //名次
             if (rank < 4) {
                 const rankImg = wx.createImage();
-                rankImg.src = `wx-sub/image/icon${rank}.png`;
+                rankImg.src = `openData/image/icon${rank}.png`;
                 rankImg.onload = () => {
                     ctx.drawImage(rankImg, 50, 15 + itemGapY, 40, 50);
                 };
